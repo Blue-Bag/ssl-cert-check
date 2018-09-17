@@ -268,7 +268,11 @@ MKTEMP=$(which mktemp)
 FIND=$(which find)
 
 # Try to find a mail client
-if [ -f /usr/bin/mailx ]
+if [ -f /usr/bin/mutt ]
+then
+    MAIL="/usr/bin/mutt"
+    MAILMODE="mutt"
+elif [ -f /usr/bin/mailx ]
 then
     MAIL="/usr/bin/mailx"
     MAILMODE="mailx"
@@ -291,7 +295,7 @@ then
 elif [ -f /usr/sbin/sendmail ]
 then
     MAIL="/usr/sbin/sendmail"
-    MAILMODE="sendmail"    
+    MAILMODE="sendmail"
 else
     MAIL="cantfindit"
     MAILMODE="cantfindit"
@@ -329,8 +333,11 @@ send_mail() {
     MSG=${4}
 
     case "${MAILMODE}" in
+        "mutt")
+            echo -e "$MSG" | ${MAIL} -s "$SUBJECT" $TO
+            ;;
         "mail" | "mailx")
-            echo "$MSG" | ${MAIL} -r $FROM -s "$SUBJECT" $TO
+            echo -e "$MSG" | ${MAIL} -s "$SUBJECT" $TO -- -f "$FROM"
             ;;
         "sendmail")
             (echo "Subject:$SUBJECT" && echo "TO:$TO" && echo "FROM:$FROM" && echo "$MSG") | ${MAIL} $TO
